@@ -22,9 +22,16 @@ cd "$ROOT"
 
 say "1/3. Базовый софт (apt)"
 command -v apt-get >/dev/null || die "это не Debian/Ubuntu/Kali — ставь руками: docker, docker-compose, python3-pip"
-apt-get update -qq || die "apt update не прошёл — проверь сеть/прокси (см. шапку скрипта)"
-apt-get install -y -qq docker.io python3-pip rsync jq nmap tcpdump curl || \
-    die "что-то не поставилось — разбирайся по выводу выше"
+apt-get update -qq || warn "apt update не прошёл — пробую дальше (сеть/прокси?)"
+# ставим ПО ОДНОМУ: одно битое зеркало не должно валить всю установку
+for pkg in docker.io python3-pip rsync jq nmap tcpdump curl; do
+    if dpkg -s "$pkg" >/dev/null 2>&1; then
+        echo "    $pkg: уже стоит"
+    else
+        apt-get install -y -qq "$pkg" \
+            || warn "$pkg не поставился — не критично, продолжаю (можно: apt-get install --fix-missing $pkg)"
+    fi
+done
 
 say "2/3. docker compose v2"
 if ! docker compose version &>/dev/null; then
@@ -37,11 +44,12 @@ docker info >/dev/null 2>&1 || die "docker-демон не отвечает: sys
 say "3/3. python-зависимости (requests; checklib опционален)"
 python3 -c 'import requests' 2>/dev/null || pip3 install -q requests
 # checklib нужен только некоторым сплойтам; качаем с гитхаба оргов
-# (на игре GitHub через прокси доступен — см. шапку)
+# (на игре GitHub через прокси доступен — см. шапку). На Kali/новых Debian
+# pip защищён PEP 668, поэтому сначала пробуем с --break-system-packages.
 if ! python3 -c 'import checklib' 2>/dev/null; then
-    pip3 install -q git+https://github.com/pomo-mondreganto/checklib 2>/dev/null \
-        && echo "checklib: OK" \
-        || echo "[!] checklib не поставился — он нужен не всем сплойтам; можно повторить позже"
+    pip3 install -q --break-system-packages git+https://github.com/pomo-mondreganto/checklib 2>/dev/null \
+    || pip3 install -q git+https://github.com/pomo-mondreganto/checklib 2>/dev/null \
+    || echo "[!] checklib не поставился — он нужен не всем сплойтам; можно повторить позже"
 fi
 
 cat <<'EOF'
