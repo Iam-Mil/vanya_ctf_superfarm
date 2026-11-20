@@ -1,0 +1,20 @@
+# python-мусор
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store
+
+# артефакты запусков (не тащим в git)
+repos/S4DFarm/vol/
+volumes/
+neo_volumes/
+*.log
+
+# рабочие данные на боксах
+backup_*/
+inventory_*.txt
+thrower_state*
+vb_backups/
+creds.txt

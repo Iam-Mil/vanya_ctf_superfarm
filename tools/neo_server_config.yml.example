@@ -1,0 +1,16 @@
+# Конфиг neo-сервера (у капитана).
+# Положить в tools/neo_server_2.4.2/configs/server/config.yml
+# и запустить:  cd tools/neo_server_2.4.2 && docker compose up -d server
+db_path: "data/db.db"
+redis_url: 'redis://redis:6379/0'
+base_dir: "data/exploits"
+ping_every: "5s"
+submit_every: "2s"
+grpc_auth_key: "<ОБЩИЙ_КЛЮЧ_КОМАНДЫ>"    # тот же у всех клиентов
+
+farm:
+  url: "http://127.0.0.1:5137"           # S4DFarm (если neo на той же машине)
+  password: "<SERVER_PASSWORD фермы>"
+
+env:
+  REDIS_HOST: 127.0.0.1

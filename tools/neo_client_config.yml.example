@@ -1,0 +1,8 @@
+# Конфиг neo-клиента (на каждой атакующей Kali).
+# Скопировать рядом с бинарником `neo` под именем client_config.yml:
+#   tar xzf tools/neo_client_2.4.2_linux_amd64.tar.gz
+#   cp tools/neo_client_config.yml.example client_config.yml
+host: "<IP_КАПИТАНА>:5005"          # адрес neo-сервера команды
+metrics_host: "<IP_КАПИТАНА>:8428/api/v1/import/prometheus"
+exploit_dir: "exploits"
+grpc_auth_key: "<ОБЩИЙ_КЛЮЧ_КОМАНДЫ>"  # тот же, что в конфиге neo-сервера
