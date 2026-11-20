@@ -55,12 +55,22 @@ GAME_URL=http://172.25.15.100:8080 python3 farm/gen_teams.py
 
 ## 3. Запуск фермы (у капитана)
 
+**НА ИГРЕ (Docker Hub/PyPI под вопросом):**
+```bash
+sudo bash offline.sh
+# → docker/compose через apt (если нет), образы из images/, ферма без сборки
+```
+
+**Дома/где интернет полный (сборка с нуля, необязательно):**
 ```bash
 cd repos/S4DFarm
 echo 'SERVER_PASSWORD=придумай_пароль' > .env   # compose ждёт эту переменную
 sudo docker compose up --build -d
+# ВНИМАНИЕ: --build тянет Docker Hub + PyPI + npm — на игре так НЕ делать
+```
 
-# проверка:
+Проверка в обоих случаях:
+```bash
 sudo docker compose ps         # farm/celery/front/postgres/redis — все Up
 # морда:  http://<ip_этой_машины>:5137   (пароль — из .env)
 ```

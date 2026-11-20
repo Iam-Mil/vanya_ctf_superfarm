@@ -8,7 +8,13 @@
 ```bash
 git clone https://github.com/Iam-Mil/vanya_ctf_superfarm.git
 cd vanya_ctf_superfarm
-sudo bash install.sh     # docker + compose + софт (один раз на машину)
+
+# НА ИГРЕ (машина «только git + apt», Docker Hub закрыт):
+sudo bash offline.sh      # поставит docker/compose из apt, образы из images/,
+                          # поднимет ферму БЕЗ Docker Hub / PyPI / npm
+
+# ДОМА (полный интернет — необязательно, то же самое, но с нуля):
+sudo bash install.sh
 ```
 
 ## Карта репозитория

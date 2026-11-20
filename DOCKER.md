@@ -93,22 +93,26 @@ sudo usermod -aG docker $USER
 | в VM/WSL демон не стартует | выключен systemd (WSL) | WSL: `/etc/wsl.conf` → `[boot] systemd=true` + `wsl --shutdown`; в нормальных VM просто работает |
 | `docker compose up` висит на `Pulling` | нет интернета / прокси не настроен | это СБОРКА: на игре не собирай, используй `sudo bash offline.sh` (образы в репо); для сборки дома — `export http_proxy=... https_proxy=...` |
 
-## 7. Если на игре docker не установлен (аварийный случай)
+## 7. Сценарий игры: apt есть, git есть, Docker Hub — не факт
 
-Честный ответ: **не должно случиться** — ставится вечером (§0). Если
-всё-таки случилось, интернет на месте открывается только через прокси
-оргов (`http://10.10.10.10:8080`, GET-only) — apt через такой прокся
-обычно работает:
+Реальные условия завтра: apt и git доступны, а пул образов из Docker Hub —
+под вопросом. Отсюда правила:
+
+- **docker ставится apt'ом** (§1/§2) — это не требует Docker Hub;
+- **образы НЕ тянуть из Docker Hub**: путь `docker compose up --build`
+  на игре НЕ используем (он качает базовые образы + PyPI + npm);
+- вместо него: **`sudo bash offline.sh`** — он ставит docker/compose через
+  apt, если их нет, загружает все образы из `images/` (docker load) и
+  поднимает ферму без сборки;
+- python для сплойтов: `requests` на Kali есть из коробки; если вдруг нет —
+  в `images/wheelhouse/` лежат колёса: `pip3 install --no-index
+  --find-links images/wheelhouse requests` (без PyPI).
+
+Проверить офлайн-готовность машины (без Docker Hub):
 
 ```bash
-export http_proxy=http://10.10.10.10:8080
-export https_proxy=http://10.10.10.10:8080
-sudo -E apt-get update && sudo -E apt-get install -y docker.io docker-compose
+cat images/farm_stack.tar.gz.part-* | sudo docker load   # образы из репо
 ```
-
-(`-E` передаёт переменные прокси в sudo). Если и это не работает —
-машина в бой как атакующая не годится, используй `forcad/thrower.py`
-с другой машины команды.
 
 ## 8. Проверка после установки — три команды
 
