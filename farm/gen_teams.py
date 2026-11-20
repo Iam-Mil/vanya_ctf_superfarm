@@ -23,9 +23,13 @@ try:
 except Exception as e:
     raise SystemExit(f"Не удалось получить список команд: {e}")
 
-print("TEAMS = {")
+print("# Вставь блок ниже в repos/S4DFarm/server/app/config.py")
+print("# вместо пустого 'TEAMS': { ... }, — он уже с отступами и запятой.")
+print("# И ВЫЧЕРКНИ СВОЮ КОМАНДУ — свои флаги жюри не принимает.")
+print()
+print("    'TEAMS': {")
 for t in data:
     if not t.get("active", True):
         continue
-    print(f"    {t['name']!r}: {t['ip']!r},")
-print("}")
+    print(f"        {t['name']!r}: {t['ip']!r},")
+print("    },")
