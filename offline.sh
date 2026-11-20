@@ -60,11 +60,17 @@ cat <<EOF
 =============================================================
  Ферма поднята ОФЛАЙН.
 
+ Все образы в системе:
  Морда:        http://${IP:-<ip_этой_машины>}:5137   (пароль из .env)
  Клиент:       cd repos/S4DFarm/client
                python3 start_sploit.py sploits/<мой>.py \\
                    --server-url http://${IP:-127.0.0.1}:5137 \\
                    --server-pass <пароль> --attack-period 110
+ Neo-сервер (по желанию, образ загружен):
+               cd tools/neo_server_2.4.2
+               (настроить configs/server/config.yml: farm.url, password,
+                grpc_auth_key — см. tools/neo_server_config.yml.example)
+               sudo docker compose up -d --no-build server
 
  Дальше: FARM.md (настройка/запуск), SPLOITS.md (сплойты)
 =============================================================
