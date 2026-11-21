@@ -67,9 +67,10 @@ service is down»). Так что держать сервисы живыми —
 
 ```
 Капитан (одна из Kali amd64):
-  docker (apt install docker.io docker-compose-v2 — ставится на месте)
-  S4DFarm  :5137  — ферма: команды, статистика, сдача флагов в жюри
-  neo      :5005  — сервер: раздача сплойтов на все Kali команды
+  sudo bash offline.sh  ← ВСЁ одной командой: docker/compose через apt,
+                          образы фермы из images/ (Docker Hub не нужен),
+                          ферма поднята, морда :5137
+  (neo-сервер — по желанию, образ тоже в images/)
 
 Атакующие (каждая Kali):
   neo client (tools/neo_client_2.4.2_linux_amd64.tar.gz — без docker,
@@ -77,7 +78,8 @@ service is down»). Так что держать сервисы живыми —
                      флаги отдаёт в ферму
 
 Защитник:
-  SSH на vulnbox  — harden.sh, патчи, бэкапы, iptables
+  SSH на vulnbox  — secure.sh (пароли/ключи, SECURE.md), backup.sh
+                    (снапшоты, BACKUP.md), патчи, iptables
 ```
 
 Схема потока: сплойт написан → `neo add` (ушёл всем клиентам сам) →
@@ -95,62 +97,71 @@ service is down»). Так что держать сервисы живыми —
 
 ```
 vanya_ctf_superfarm/ (корень клона)/
-├── PLAYBOOK.md            ← вы здесь
-├── CHEATSHEET.md          ← одностраничная шпаргалка
+├── PLAYBOOK.md            ← вы здесь: план дня
+├── CHEATSHEET.md          ← одностраничная шпаргалка команд
+├── install.sh             ← установка всего (дома, где интернет полный)
+├── offline.sh             ← ЗАВТРА: ферма одной командой без Docker Hub
+├── secure.sh              ← пароли/ключи/чистка (SECURE.md)
+├── backup.sh              ← бэкапы: create/snap/restore (BACKUP.md)
+├── DOCKER.md  FARM.md  SPLOITS.md  SECURE.md  BACKUP.md  ← гайды
 ├── forcad/
 │   ├── forcad.py          ← клиент API жюри (teams/config/attack_data/submit)
 │   └── thrower.py         ← ручная сдача флагов с памятью о сданных
 ├── sploits/
 │   └── template.py        ← шаблон сплойта (farm/neo-совместимый)
 ├── farm/
-│   ├── forcad_http.py     ← протокол S4DFarm→ForcAD (класть в protocols/)
+│   ├── forcad_http.py     ← протокол S4DFarm→ForcAD (уже лежит в ферме)
 │   └── gen_teams.py       ← генерит TEAMS для config фермы из API жюри
-├── vulnbox/
-│   ├── harden.sh          ← первые 10 минут на боксе: пароли/ключи/sshd/fw
-│   └── inventory.sh       ← карта сервисов/портов + бэкап-архив
-├── kali/
-│   └── setup_kali.sh      ← прокси+софт+ключ+проверка жюри
-├── tools/                 ← neo-клиент linux_amd64 (ваш вариант) + сервер neo для docker build
-│   └── neo_server_2.4.2/  ← исходник сервера neo (docker build)
+├── images/                ← ГОТОВЫЕ ОБРАЗЫ (замена Docker Hub) + wheelhouse
+├── vulnbox/               ← inventory.sh (разведка портов/сервисов)
+├── kali/                  ← setup_kali.sh (прокси+софт+ключ+проверка жюри)
+├── tools/                 ← neo-клиенты (amd64) + исходник neo-сервера
 └── repos/
-    └── S4DFarm/           ← ФЕРМА (правим здесь): + протокол forcad_http уже внутри
+    └── S4DFarm/           ← ФЕРМА (правим здесь): протокол forcad_http внутри,
+                             конфиг под ForcAD уже готов
 ```
 
 **Сегодня вечером:** `git clone https://github.com/Iam-Mil/vanya_ctf_superfarm.git`
-на каждую Kali (репозиторий самодостаточен — ничего больше тянуть не нужно).
+на каждую доступную Kali (репозиторий самодостаточен — ничего больше тянуть
+не нужно). Завтрашние машины, которые сегодня недоступны, — не проблема:
+`git clone` + `sudo bash offline.sh` сработают на них с нуля.
 
 ## 4. Таймлайн дня
 
-### Сегодня вечером (на каждой Kali, ~15 минут)
-- [ ] `git`-пакет файлов скопирован, `python3 -c 'import requests'` работает
+### Сегодня вечером (на каждой доступной Kali, ~10 минут)
+- [ ] `git clone` репозитория; `python3 -c 'import requests'` работает
 - [ ] `ssh-keygen -t ed25519` — ключ сгенерён, pubkey у каждого записан
-- [ ] На Kali капитана (у всех amd64): docker не обязателен заранее —
-      ставится на месте одной командой `apt install -y docker.io
-      docker-compose-v2` (apt через прокси работает). Образы фермы и neo
-      собираются на месте из локальных папок, интернет не нужен.
-      НЕ собирать образы на Mac — он arm64, на amd64-Kali не заведётся.
-      С собой у капитана: `repos/S4DFarm/` и `tools/neo_server_2.4.2/`
-- [ ] Telegram/чат команды: где лежит пакет, кто капитан, кто защитник
+- [ ] Telegram/чат команды: кто капитан, кто защитник, пароль фермы
+      (придумайте `SERVER_PASSWORD` заранее и киньте в чат — завтра его
+      просто впишут в `.env`)
 
 ### Т0 — дали доступы (токен, IP, пароль бокса)
 - [ ] **Все:** записать в `~/creds.txt` (chmod 600): IP бокса, пароль,
       `TEAM_TOKEN`, что-нибудь ещё из письма
 - [ ] **Капитан:** борда `http://10.10.10.10/` в браузере, проверить
       `/api/client/config/` — там реальные параметры игры
-- [ ] **Защитник:** зайти на vulnbox → запустить `harden.sh` (ключи! пароль!)
+- [ ] **Защитник:** SECURE.md §0 — первые 2 минуты (пароль + чужие ключи),
+      затем `sudo ./secure.sh --gen-key`; вход по ключу проверен из
+      другого терминала → (по желанию) `sudo ./secure.sh --strict`
+- [ ] **Защитник:** `sudo ./backup.sh create pristine` — девственный
+      снапшот бокса ДО любых изменений (+ rsync на Kali, команда печатается)
+- [ ] **Капитан:** вписать в `repos/S4DFarm/server/app/config.py`:
+      `TEAM_TOKEN` (из письма) и `TEAMS`
+      (`GAME_URL=http://10.10.10.10 python3 farm/gen_teams.py`, себя вычеркнуть),
+      затем `sudo bash offline.sh` — ферма поднята
 - [ ] **Атакующие:** `setup_kali.sh`, проверить сеть: пинг 10.2.Y.2
 
 ### Т0+10..30 — освоение
-- [ ] **Защитник:** `inventory.sh` → список сервисов и портов, бэкап
-      стянут на Kali (2 копии: на боксе и на Kali — требование оргов);
+- [ ] **Защитник:** `vulnbox/inventory.sh` → список сервисов и портов
+      (pristine-бэкап уже сделан в Т0, не дублируй);
       `tcpdump -ni any port <порт>` на 2 раунда — увидеть, откуда и с каким
       ритмом ходит чекер (вживую видно, на каком шаге put/get ваш сервис
       начал обламываться — лучший детектор своих проблем)
-- [ ] **Капитан:** `python3 gen_teams.py` → TEAMS в config фермы,
-      `TEAM_TOKEN` в config, ферма поднята, `forcad_http.py` на месте
+- [ ] **Капитан:** морда `http://<ip>:5137` открыта, `/api/teams` отвечает
+      (curl с паролем из .env — проверка, что ферма жива)
 - [ ] **Атакующие:** `curl 10.10.10.10/api/client/attack_data/ | jq` —
       есть ли публичные flag ids по сервисам; читать исходники сервисов
-      (бэкап уже на Kali — удобно грепать)
+      (pristine-бэкап уже на Kali — удобно грепать)
 
 ### Т0+30..60 — первый бой
 - [ ] Первый сплойт по шаблону `sploits/template.py`, тест на `127.0.0.1`

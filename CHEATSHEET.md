@@ -80,17 +80,22 @@ python3 sploits/my_sploit.py 127.0.0.1
 ## Ферма (капитан)
 
 ```bash
-# 1. config: repos/S4DFarm/server/app/config.py
-#    'SYSTEM_PROTOCOL': 'forcad_http',
-#    'SYSTEM_URL': 'http://10.10.10.10/flags',
-#    'TEAM_TOKEN': '<токен>',
-#    'FLAG_FORMAT': r'[A-Z0-9]{31}=',
-#    'TEAMS': <python3 farm/gen_teams.py>,
-#    'SERVER_PASSWORD': '<свой пароль фермы>',
-# 2. наш протокол:
-cp farm/forcad_http.py repos/S4DFarm/server/app/protocols/
-# 3. запуск (docker ставится так: apt install -y docker.io docker-compose-v2):
-cd repos/S4DFarm && docker compose up --build -d     # UI на :5137
+# НА ИГРЕ — одной командой (docker/compose через apt, образы из images/,
+# без Docker Hub/PyPI/npm):
+#   1) в repos/S4DFarm/server/app/config.py вписать:
+#        TEAM_TOKEN = '<токен из письма>'
+#        TEAMS      = <вывод команды ниже>       # себя ВЫЧЕРКНУТЬ!
+#        (SYSTEM_URL и протокол forcad_http уже настроены)
+#   2) .env — ОБЯЗАТЕЛЬНО в repos/S4DFarm, не в корне репо!
+echo 'SERVER_PASSWORD=свой_пароль' > repos/S4DFarm/.env
+
+#   3) генератор TEAMS:
+GAME_URL=http://10.10.10.10 python3 farm/gen_teams.py
+
+#   4) подъём:
+sudo bash offline.sh
+# изменил config.py позже → перезапуск без пересборки:
+sudo docker compose -p s4dfarm up -d --force-recreate farm celery
 ```
 
 ## neo (раздача сплойтов по Kali команды)
